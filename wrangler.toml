@@ -3,4 +3,4 @@ main = "build/worker/shim.mjs"
 compatibility_date = "2025-06-10"
 
 [build]
-command = "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh && cargo install -q worker-build && worker-build --release"
+command = "cargo install -q worker-build && worker-build --release"
