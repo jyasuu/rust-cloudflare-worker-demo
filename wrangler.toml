@@ -1,6 +1,17 @@
 name = "worker-demo"
 main = "build/worker/shim.mjs"
-compatibility_date = "2025-06-10"
+compatibility_date = "2025-06-11"
 
 [build]
 command = ". $HOME/.cargo/env && cargo install -q worker-build && worker-build --release"
+
+
+[vars]
+# These will be set via secrets, not here
+# GITHUB_CLIENT_ID = ""
+# GITHUB_CLIENT_SECRET = ""
+# GITHUB_REDIRECT_URI = ""
+
+# Add these as secrets using: wrangler secret put GITHUB_CLIENT_SECRET
+[secrets]
+# GITHUB_CLIENT_SECRET
