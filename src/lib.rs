@@ -231,8 +231,8 @@ async fn handle_github_callback(req: Request, ctx: RouteContext<()>) -> Result<R
         },
     };
 
-
-    match response.headers_mut().set("Set-Cookie", &format!(
+    let headers = response.headers_mut();
+    match headers.append("Set-Cookie", &format!(
         "session={}; HttpOnly; Secure; SameSite=Strict; Max-Age=86400; Path=/",
         session_json
     )){
