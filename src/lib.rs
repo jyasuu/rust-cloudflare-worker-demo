@@ -204,13 +204,37 @@ async fn handle_github_callback(req: Request, ctx: RouteContext<()>) -> Result<R
         expires_at: js_sys::Date::now() as u64 + (24 * 60 * 60 * 1000), // 24 hours
     };
     
-    let session_json = serde_json::to_string(&session)?;
+    let session_json = match serde_json::to_string(&session) {
+        Ok(var)=>{ var },
+        Err(error)=>{
+            return Response::error(format!("GitHub OAuth json: {}", error), 400);
+        },
+    };
+
+    let url = match Url::parse("/") {
+        Ok(var)=>{ var },
+        Err(error)=>{
+            return Response::error(format!("GitHub OAuth url: {}", error), 400);
+        },
+    };
     
-    let mut response = Response::redirect(Url::parse("/")?)?;
-    response.headers_mut().set("Set-Cookie", &format!(
+    let mut response = match Response::redirect(url) {
+        Ok(var)=>{ var },
+        Err(error)=>{
+            return Response::error(format!("GitHub OAuth redirect: {}", error), 400);
+        },
+    };
+
+
+    match response.headers_mut().set("Set-Cookie", &format!(
         "session={}; HttpOnly; Secure; SameSite=Strict; Max-Age=86400; Path=/",
         session_json
-    ))?;
+    )){
+        Ok(_)=>{ },
+        Err(error)=>{
+            return Response::error(format!("GitHub OAuth set cookie: {}", error), 400);
+        },
+    };
     
     Ok(response)
 }
