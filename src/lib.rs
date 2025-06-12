@@ -224,14 +224,10 @@ async fn handle_github_callback(req: Request, ctx: RouteContext<()>) -> Result<R
         },
     };
     
-    let mut response = match Response::redirect(url) {
-        Ok(var)=>{ var },
-        Err(error)=>{
-            return Response::error(format!("GitHub OAuth redirect: {}", error), 400);
-        },
-    };
+    
+    let mut headers = Headers::new();
 
-    let headers = response.headers_mut();
+
     match headers.append("Set-Cookie", &format!(
         "session={}; HttpOnly; Secure; SameSite=Strict; Max-Age=86400; Path=/",
         session_json
@@ -241,6 +237,15 @@ async fn handle_github_callback(req: Request, ctx: RouteContext<()>) -> Result<R
             return Response::error(format!("GitHub OAuth set cookie: {}", error), 400);
         },
     };
+
+    let response = match Response::redirect(url) {
+        Ok(var)=>{ var },
+        Err(error)=>{
+            return Response::error(format!("GitHub OAuth redirect: {}", error), 400);
+        },
+    };
+    
+    let response = response.with_headers(headers);
     
     Ok(response)
 }
