@@ -290,6 +290,10 @@ async fn handle_get_user(req: Request, _ctx: RouteContext<()>) -> Result<Respons
                     };
 
                 }
+                else
+                {
+                    return Response::error(format!("GitHub OAuth referer: {}", referer), 400);
+                }
                 let response  = response.with_headers(headers);
                 Ok(response)
             } else {
