@@ -265,16 +265,16 @@ async fn handle_get_user(req: Request, _ctx: RouteContext<()>) -> Result<Respons
                 let response = match Response::from_json(&session.user) {
                     Ok(res) => {res},
                     Err(error) => {
-                        return Response::error(format!("GitHub OAuth get user: {}", error), 500);
+                        return Response::error(format!("GitHub OAuth get user session: {}", error), 400);
                     },
                 };
                 
                 let mut headers = Headers::new();
 
                 let origin = match req.headers().get("Origin"){
-                    Ok(res) => {res.ok_or("").unwrap()},
+                    Ok(res) => {res.or(Some(String::from(""))).unwrap()},
                     Err(error) => {
-                        return Response::error(format!("GitHub OAuth get user: {}", error), 500);
+                        return Response::error(format!("GitHub OAuth get user: {}", error), 400);
                     },
                 };
 
@@ -285,7 +285,7 @@ async fn handle_get_user(req: Request, _ctx: RouteContext<()>) -> Result<Respons
                     match headers.append("Access-Control-Allow-Origin", &origin){
                         Ok(_)=>{ },
                         Err(error)=>{
-                            return Response::error(format!("GitHub OAuth set cookie: {}", error), 400);
+                            return Response::error(format!("GitHub OAuth cors: {}", error), 400);
                         },
                     };
 
