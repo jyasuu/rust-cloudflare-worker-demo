@@ -271,18 +271,18 @@ async fn handle_get_user(req: Request, _ctx: RouteContext<()>) -> Result<Respons
                 
                 let mut headers = Headers::new();
 
-                let origin = match req.headers().get("Origin"){
+                let referer = match req.headers().get("Referer"){
                     Ok(res) => {res.or(Some(String::from(""))).unwrap()},
                     Err(error) => {
                         return Response::error(format!("GitHub OAuth get user: {}", error), 400);
                     },
                 };
 
-                if origin.contains("https://worker-demo.capsleo2000.workers.dev") ||
-                    origin.contains("https://jyasuu.github.io") ||
-                    origin.contains("gitpod.io")
+                if referer.contains("https://worker-demo.capsleo2000.workers.dev") ||
+                    referer.contains("https://jyasuu.github.io") ||
+                    referer.contains("gitpod.io")
                 {
-                    match headers.append("Access-Control-Allow-Origin", &origin){
+                    match headers.append("Access-Control-Allow-Origin", &referer){
                         Ok(_)=>{ },
                         Err(error)=>{
                             return Response::error(format!("GitHub OAuth cors: {}", error), 400);
