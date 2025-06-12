@@ -11,7 +11,3 @@ command = ". $HOME/.cargo/env && cargo install -q worker-build && worker-build -
 # GITHUB_CLIENT_ID = ""
 # GITHUB_CLIENT_SECRET = ""
 # GITHUB_REDIRECT_URI = ""
-
-# Add these as secrets using: wrangler secret put GITHUB_CLIENT_SECRET
-[secrets]
-# GITHUB_CLIENT_SECRET
