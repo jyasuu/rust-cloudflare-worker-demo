@@ -282,7 +282,7 @@ async fn handle_get_user(req: Request, _ctx: RouteContext<()>) -> Result<Respons
                     referer.contains("https://jyasuu.github.io") ||
                     referer.contains("gitpod.io")
                 {
-                    match headers.append("Access-Control-Allow-Origin", &referer){
+                    match headers.append("Access-Control-Allow-Origin", &"*"){
                         Ok(_)=>{ },
                         Err(error)=>{
                             return Response::error(format!("GitHub OAuth cors: {}", error), 400);
