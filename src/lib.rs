@@ -182,10 +182,20 @@ async fn handle_github_callback(req: Request, ctx: RouteContext<()>) -> Result<R
     };
 
     // Exchange code for access token
-    let access_token = exchange_code_for_token(code, &ctx.env).await?;
+    let access_token = match exchange_code_for_token(code, &ctx.env).await {
+        Ok(var)=>{ var },
+        Err(error)=>{
+            return Response::error(format!("GitHub OAuth access token: {}", error), 400);
+        },
+    };
     
     // Get user info from GitHub
-    let user = get_github_user(&access_token).await?;
+    let user = match get_github_user(&access_token).await {
+        Ok(var)=>{ var },
+        Err(error)=>{
+            return Response::error(format!("GitHub OAuth get user: {}", error), 400);
+        },
+    };
     
     // Create session
     let session = UserSession {
