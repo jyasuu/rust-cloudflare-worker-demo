@@ -31,6 +31,7 @@ async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
     console_error_panic_hook::set_once();
 
     Router::new()
+        .options_async("/api/user", handle_get_user)
         .get_async("/", handle_root)
         .get_async("/auth/github", handle_github_auth)
         .get_async("/auth/github/callback", handle_github_callback)
@@ -259,33 +260,47 @@ async fn handle_github_callback(req: Request, ctx: RouteContext<()>) -> Result<R
 }
 
 async fn handle_get_user(req: Request, _ctx: RouteContext<()>) -> Result<Response> {
-    match get_session_from_request(&req) {
+    
+    let referer = match req.headers().get("Referer"){
+        Ok(res) => {res.or(Some(String::from(""))).unwrap()},
+        Err(error) => {
+            return Response::error(format!("GitHub OAuth get user: {}", error), 400);
+        },
+    };
+    worker::console_log!("referer: {referer}");
+
+    
+    let origin = match req.headers().get("Origin"){
+        Ok(res) => {res.or(Some(String::from(""))).unwrap()},
+        Err(error) => {
+            return Response::error(format!("GitHub OAuth get user: {}", error), 400);
+        },
+    };
+    worker::console_log!("origin: {origin}");
+    
+
+    let mut headers = Headers::new();
+    
+    match headers.append("Access-Control-Allow-Origin", &"*"){
+        Ok(_)=>{ },
+        Err(error)=>{
+            return Response::error(format!("GitHub OAuth cors: {}", error), 400);
+        },
+    };
+
+    let response = match get_session_from_request(&req) {
         Some(session) => {
             if session.expires_at > js_sys::Date::now() as u64 {
-                let response = match Response::from_json(&session.user) {
-                    Ok(res) => {res},
-                    Err(error) => {
-                        return Response::error(format!("GitHub OAuth get user session: {}", error), 400);
-                    },
-                };
-                
-                let mut headers = Headers::new();
-                
-                match headers.append("Access-Control-Allow-Origin", &"*"){
-                    Ok(_)=>{ },
-                    Err(error)=>{
-                        return Response::error(format!("GitHub OAuth cors: {}", error), 400);
-                    },
-                };
-
-                let response: Response  = response.with_headers(headers);
-                Ok(response)
+                Response::from_json(&session.user)
             } else {
                 Response::error("Session expired", 401)
             }
         }
         None => Response::error("Not authenticated", 401),
-    }
+    }?;
+
+    let response: Response  = response.with_headers(headers);
+    Ok(response)
 }
 
 async fn handle_logout(_req: Request, _ctx: RouteContext<()>) -> Result<Response> {
