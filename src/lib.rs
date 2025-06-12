@@ -262,7 +262,36 @@ async fn handle_get_user(req: Request, _ctx: RouteContext<()>) -> Result<Respons
     match get_session_from_request(&req) {
         Some(session) => {
             if session.expires_at > js_sys::Date::now() as u64 {
-                Response::from_json(&session.user)
+                let response = match Response::from_json(&session.user) {
+                    Ok(res) => {res},
+                    Err(error) => {
+                        return Response::error(format!("GitHub OAuth get user: {}", error), 500);
+                    },
+                };
+                
+                let mut headers = Headers::new();
+
+                let origin = match req.headers().get("Origin"){
+                    Ok(res) => {res.ok_or("").unwrap()},
+                    Err(error) => {
+                        return Response::error(format!("GitHub OAuth get user: {}", error), 500);
+                    },
+                };
+
+                if origin.contains("https://worker-demo.capsleo2000.workers.dev") ||
+                    origin.contains("https://jyasuu.github.io") ||
+                    origin.contains("gitpod.io")
+                {
+                    match headers.append("Access-Control-Allow-Origin", &origin){
+                        Ok(_)=>{ },
+                        Err(error)=>{
+                            return Response::error(format!("GitHub OAuth set cookie: {}", error), 400);
+                        },
+                    };
+
+                }
+                let response  = response.with_headers(headers);
+                Ok(response)
             } else {
                 Response::error("Session expired", 401)
             }
