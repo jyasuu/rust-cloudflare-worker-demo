@@ -129,8 +129,35 @@ async fn handle_root(_req: Request, _ctx: RouteContext<()>) -> Result<Response> 
 }
 
 async fn handle_github_auth(_req: Request, ctx: RouteContext<()>) -> Result<Response> {
+    match ctx.env.var("GITHUB_CLIENT_ID")
+    {
+        Ok(_) =>{
+        },
+        Err(err) =>{
+            return Response::error(format!("GITHUB_CLIENT_ID:{err:}"), 500);
+        },
+    }
+    match ctx.env.var("GITHUB_CLIENT_ID")
+    {
+        Ok(_) =>{
+        },
+        Err(err) =>{
+            return Response::error(format!("GITHUB_REDIRECT_URI:{err:}"), 500);
+        },
+    }
+
     let client_id = ctx.env.var("GITHUB_CLIENT_ID")?.to_string();
     let redirect_uri = ctx.env.var("GITHUB_REDIRECT_URI")?.to_string();
+
+    match Url::parse("https://github.com/login/oauth/authorize") {
+        Ok(_) =>{
+            
+        },
+        Err(err) =>{
+            return Response::error(format!("Parse:{err:}"), 500);
+        },
+        
+    }
     
     let mut auth_url = Url::parse("https://github.com/login/oauth/authorize")?;
     auth_url.query_pairs_mut()
