@@ -11,3 +11,7 @@ command = ". $HOME/.cargo/env && cargo install -q worker-build && worker-build -
 # GITHUB_CLIENT_ID = ""
 # GITHUB_CLIENT_SECRET = ""
 # GITHUB_REDIRECT_URI = ""
+
+[observability]
+enabled = true
+head_sampling_rate = 1 # optional. default = 1.

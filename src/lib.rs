@@ -31,7 +31,7 @@ async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
     console_error_panic_hook::set_once();
 
     Router::new()
-        .options_async("/api/user", handle_get_user)
+        .options_async("/api/user", handle_options)
         .get_async("/", handle_root)
         .get_async("/auth/github", handle_github_auth)
         .get_async("/auth/github/callback", handle_github_callback)
@@ -39,6 +39,22 @@ async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
         .post_async("/api/logout", handle_logout)
         .run(req, env)
         .await
+}
+
+
+// CORS preflight handler
+async fn handle_options(_req: Request, _ctx: RouteContext<()>) -> Result<Response> {
+    Ok(Response::empty().unwrap().with_status(204).with_headers(cors_headers()))
+}
+
+// Generate CORS headers
+fn cors_headers() -> Headers {
+    let mut headers = Headers::new();
+    headers.set("Access-Control-Allow-Origin", "*").unwrap();
+    headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS").unwrap();
+    headers.set("Access-Control-Allow-Headers", "*").unwrap();
+    headers.set("Access-Control-Max-Age", "86400").unwrap(); // 24-hour cache
+    headers
 }
 
 async fn handle_root(_req: Request, _ctx: RouteContext<()>) -> Result<Response> {
