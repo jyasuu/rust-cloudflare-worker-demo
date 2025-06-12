@@ -216,17 +216,8 @@ async fn handle_github_callback(req: Request, ctx: RouteContext<()>) -> Result<R
         req.url()?.scheme(),
         req.url()?.host_str().unwrap_or("")
     );
-
-    let url = match Url::parse(&root_url) {
-        Ok(var)=>{ var },
-        Err(error)=>{
-            return Response::error(format!("GitHub OAuth url: {}", error), 400);
-        },
-    };
-    
     
     let mut headers = Headers::new();
-
 
     match headers.append("Set-Cookie", &format!(
         "session={}; HttpOnly; Secure; SameSite=Strict; Max-Age=86400; Path=/",
@@ -238,10 +229,27 @@ async fn handle_github_callback(req: Request, ctx: RouteContext<()>) -> Result<R
         },
     };
 
-    let response = match Response::redirect(url) {
+    
+    let html = format!(
+    r#"
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GitHub OAuth Login</title>
+</head>
+<body>
+    <script>
+        window.location.href = '{root_url}';
+    </script>
+</body>
+</html>
+    "#);
+
+    let response = match Response::from_html(html)
+    {
         Ok(var)=>{ var },
         Err(error)=>{
-            return Response::error(format!("GitHub OAuth redirect: {}", error), 400);
+            return Response::error(format!("GitHub OAuth html: {}", error), 400);
         },
     };
     
